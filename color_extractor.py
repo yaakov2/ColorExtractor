@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 
 import click
 from numpy import unique
@@ -8,27 +9,30 @@ from scipy.spatial.ckdtree import cKDTree
 
 
 @click.command()
-@click.argument('color_table')
-@click.argument('image_file')
-@click.argument('x', type=int)
-@click.argument('y', type=int)
-@click.argument('width', type=int)
-@click.argument('height', type=int)
-@click.option('-save-box', default=None, help='store rectangle image for debugging')
-def color_extractor(color_table, image_file, x, y, width, height, save_box):
+@click.option('-colors', help='color table file: tsv (r, g, b, color_name)')
+@click.option('-image', help='input image file (.jpg, .gif, .png...)')
+@click.option('-x', type=int, help='left bounding box corner (pixels)')
+@click.option('-y', type=int, help='top bounding box corner (pixels)')
+@click.option('-width', type=int, help='bounding box width (pixels)')
+@click.option('-height', type=int, help='bounding box height (pixels)')
+@click.option('-save-box', default=None, help='store sample region to file for debugging')
+@click.option('-output-format', type=click.Choice(['tsv', 'json']), default='tsv')
+def color_extractor(colors, image, x, y, width, height, save_box, output_format):
     """
-    Extract a color histogram from a rectangle (x, y, width, height: pixels) within image_file.
-
-    Color_table: TSV (r,g,b,color_name)
+    Extract a color histogram from a sampling rectangle within an image.
     """
-    image = imread(image_file,mode='RGB')
+    image_data = imread(image, mode='RGB')
     # print(image.shape)
-    rectangle = image[y:y + height, x:x + width, :]
+    rectangle = image_data[y:y + height, x:x + width, :]
     if save_box:
         imsave(save_box, rectangle)
 
-    histogram = ColorHistogram(rgb_names(read_tsv(color_table)))
-    print_tsv(histogram.sample_from_rectangle(rectangle))
+    extractor = ColorExtractor(rgb_names(read_tsv(colors)))
+    histogram = extractor.sample_from_rectangle(rectangle)
+    if output_format == 'tsv':
+        print_tsv(histogram)
+    else:
+        print(json.dumps({k: int(v) for v, k in histogram}))
 
 
 def read_tsv(file_name):
@@ -47,7 +51,7 @@ def rgb_names(data):
         yield int(r), int(g), int(b), name
 
 
-class ColorHistogram:
+class ColorExtractor:
     def __init__(self, color_data):
         color_data = list(color_data)
         self.color_names = [name for r, g, b, name in color_data]
