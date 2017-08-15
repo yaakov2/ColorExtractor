@@ -1,0 +1,35 @@
+{
+	"14745.jpg53743": {
+		"fileref": "",
+		"size": 53743,
+		"filename": "14745.jpg",
+		"base64_img_data": "",
+		"file_attributes": {},
+		"regions": {
+			"0": {
+				"shape_attributes": {
+					"name": "rect",
+					"x": 103,
+					"y": 152,
+					"width": 313,
+					"height": 408
+				},
+				"region_attributes": {
+					"name": "Dress"
+				}
+			},
+			"1": {
+				"shape_attributes": {
+					"name": "rect",
+					"x": 292,
+					"y": 258,
+					"width": 53,
+					"height": 28
+				},
+				"region_attributes": {
+					"name": "Zebra"
+				}
+			}
+		}
+	}
+}
